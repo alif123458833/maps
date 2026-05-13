@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Sekolah Premium</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+
+body{
+  background:linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb);
+  color:white;
+  height:100vh;
+  overflow:hidden;
+}
+
+.screen{
+  display:none;
+  width:100vw;
+  height:100vh;
+  padding:15px;
+  overflow:auto;
+}
+
+.active{display:block;}
+
+.container{
+  max-width:420px;
+  margin:auto;
+  background:rgba(255,255,255,0.08);
+  padding:18px;
+  border-radius:18px;
+  backdrop-filter:blur(10px);
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:none;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:white;
+  color:#1e3a8a;
+  font-weight:bold;
+  margin-top:8px;
+  cursor:pointer;
+}
+
+button:hover{background:#dbeafe;}
+
+.card{
+  background:rgba(255,255,255,0.1);
+  padding:12px;
+  border-radius:12px;
+  margin-top:10px;
+}
+
+/* bottom nav */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  background:#0b1b3a;
+}
+.nav button{
+  flex:1;
+  border-radius:0;
+  background:transparent;
+  color:white;
+  font-size:12px;
+}
+
+.toast{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  padding:10px 20px;
+  border-radius:10px;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<div class="screen active" id="login">
+  <div class="container">
+    <h2>🏫 Login Sekolah</h2>
+
+    <select id="type">
+      <option value="pelawat">Pelawat</option>
+      <option value="pengetua">Pengetua</option>
+    </select>
+
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+
+    <button onclick="login()">LOGIN</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="home">
+  <div class="container">
+    <h2>📊 Dashboard</h2>
+    <button onclick="openPage('visitor')">📋 Pelawat</button>
+    <button onclick="openPage('food')">🍔 Makanan</button>
+    <button onclick="openPage('map')">🗺️ Peta</button>
+  </div>
+
+  <div class="nav">
+    <button onclick="openPage('home')">Home</button>
+    <button onclick="openPage('visitor')">Pelawat</button>
+    <button onclick="openPage('food')">Food</button>
+  </div>
+</div>
+
+<!-- VISITOR -->
+<div class="screen" id="visitor">
+  <div class="container">
+    <h2>Daftar Pelawat</h2>
+    <input id="vname" placeholder="Nama">
+    <input id="vpurpose" placeholder="Tujuan">
+    <button onclick="saveVisitor()">Hantar</button>
+    <button onclick="downloadVisitors()">📥 Download Rekod</button>
+  </div>
+</div>
+
+<!-- FOOD -->
+<div class="screen" id="food">
+  <div class="container">
+    <h2>Makanan Kantin</h2>
+
+    <div class="card">Nasi Lemak <button onclick="order('Nasi Lemak')">Order</button></div>
+    <div class="card">Mee Goreng <button onclick="order('Mee Goreng')">Order</button></div>
+    <div class="card">Chicken Chop <button onclick="order('Chicken Chop')">Order</button></div>
+    <div class="card">Air Teh Ais <button onclick="order('Teh Ais')">Order</button></div>
+
+    <button onclick="downloadOrders()">📥 Resit Semua Order</button>
+    <p id="msg"></p>
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="screen" id="map">
+  <div class="container">
+    <h2>Peta Sekolah</h2>
+    <iframe style="width:100%;height:250px;border:0;border-radius:10px;"
+    src="https://maps.google.com/maps?q=muar&t=&z=13&output=embed"></iframe>
+  </div>
+</div>
+
+<script>
+let visitors=[];
+let orders=[];
+
+function toast(msg){
+  let t=document.getElementById('toast');
+  t.innerText=msg;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',2000);
+}
+
+function openPage(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function login(){
+  let type=document.getElementById('type').value;
+  let u=document.getElementById('user').value.toLowerCase();
+  let p=document.getElementById('pass').value;
+
+  if(type==='pelawat' && p==='pelawat'){
+    openPage('home'); toast('Login Pelawat OK');
+  }
+
+  if(type==='pengetua'){
+    let list=['rizq','ehamad','alif'];
+    if(list.includes(u) && p==='pengetua'){
+      openPage('home'); toast('Login Pengetua OK');
+    }
+  }
+}
+
+function saveVisitor(){
+  let v={name:document.getElementById('vname').value,purpose:document.getElementById('vpurpose').value};
+  visitors.push(v);
+  localStorage.setItem('visitors',JSON.stringify(visitors));
+  toast('Pelawat Disimpan');
+}
+
+function order(food){
+  orders.push(food);
+  localStorage.setItem('orders',JSON.stringify(orders));
+  document.getElementById('msg').innerText="Order " + food + " berjaya";
+  toast('Order berjaya');
+}
+
+function downloadVisitors(){
+  let text=JSON.stringify(visitors,null,2);
+  let blob=new Blob([text],{type:"text/plain"});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download="pelawat.txt";
+  a.click();
+}
+
+function downloadOrders(){
+  let text=JSON.stringify(orders,null,2);
+  let blob=new Blob([text],{type:"text/plain"});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download="order.txt";
+  a.click();
+}
+</script>
+
+</body>
+</html>
